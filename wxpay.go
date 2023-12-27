@@ -296,9 +296,18 @@ func (c *Client) doRequest(method string, param Param, result interface{}) (err 
 			// 根据类型转换
 			if strings.ToLower(param.ReturnType()) == "json" {
 				req.PostForm = values
-			} else {
-				mapValues := c.formatUrlValueToMap(values)
+			} else if param.ReturnType() == "jsonStr" {
 				var reqByte []byte
+				mapValues := c.formatUrlValueToMap(values)
+				if reqByte, err = json.Marshal(mapValues); err != nil {
+					return
+				}
+				bodyBuffer := bytes.NewBuffer(reqByte)
+				req.Body = io.NopCloser(bodyBuffer)
+				req.ContentLength = int64(bodyBuffer.Len())
+			} else {
+				var reqByte []byte
+				mapValues := c.formatUrlValueToMap(values)
 				if reqByte, err = xml.Marshal(payXml(mapValues)); err != nil {
 					return
 				}
@@ -320,7 +329,11 @@ func (c *Client) doRequest(method string, param Param, result interface{}) (err 
 		}
 	}
 	// 添加header头
-	req.Header.Add("Content-Type", kContentType)
+	if param.ReturnType() == "jsonStr" {
+		req.Header.Set("Content-Type", kContentTypeJson)
+	} else {
+		req.Header.Set("Content-Type", kContentType)
+	}
 	// 发起请求数据
 	rsp, err := c.client.Do(req)
 	if err != nil {
@@ -329,7 +342,7 @@ func (c *Client) doRequest(method string, param Param, result interface{}) (err 
 	defer rsp.Body.Close()
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	if err != nil {
-		return err
+		return fmt.Errorf("解析返回数据失败: %v", err)
 	}
 	err = c.decode(bodyBytes, method, param.ReturnType(), param.NeedVerify(), result)
 	return

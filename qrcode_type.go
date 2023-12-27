@@ -16,6 +16,10 @@ func (g Qrcode) NeedVerify() bool {
 	return false
 }
 
+func (g Qrcode) ReturnType() string {
+	return "jsonStr"
+}
+
 // GetWxACodeUnLimit 获取不限制的小程序码 https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/qrcode-link/qr-code/getUnlimitedQRCode.html
 // 该接口用于获取小程序码，适用于需要的码数量极多的业务场景。通过该接口生成的小程序码，永久有效，数量暂无限制。
 type GetWxACodeUnLimit struct {

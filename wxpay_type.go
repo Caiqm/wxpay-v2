@@ -3,8 +3,9 @@ package wxpay
 import "fmt"
 
 const (
-	kContentType = "application/x-www-form-urlencoded;charset=utf-8"
-	kTimeFormat  = "2006-01-02 15:04:05"
+	kContentType     = "application/x-www-form-urlencoded;charset=utf-8"
+	kContentTypeJson = "application/json;charset=utf-8"
+	kTimeFormat      = "2006-01-02 15:04:05"
 )
 
 const (
