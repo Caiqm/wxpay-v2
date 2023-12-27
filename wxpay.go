@@ -357,7 +357,13 @@ func (c *Client) decode(data []byte, method, returnType string, needVerifySign b
 	if strings.ToLower(returnType) == "json" || returnType == "jsonStr" || returnType == "" {
 		var raw = make(map[string]json.RawMessage)
 		if err = json.Unmarshal(data, &raw); err != nil {
-			return
+			if returnType == "jsonStr" {
+				err = nil
+				rsp := result.(*QrcodeRsp)
+				rsp.Buffer = data
+				return
+			}
+			return fmt.Errorf("解析返回结构失败，%v", err)
 		}
 		// 判断是否成功
 		var errNBytes = raw[kFieldErrCode]
