@@ -297,9 +297,9 @@ func (c *Client) doRequest(method string, param Param, result interface{}) (err 
 			if strings.ToLower(param.ReturnType()) == "json" {
 				req.PostForm = values
 			} else if param.ReturnType() == "jsonStr" {
+				// 结构体转map
 				var reqByte []byte
-				mapValues := c.formatUrlValueToMap(values)
-				if reqByte, err = json.Marshal(mapValues); err != nil {
+				if reqByte, err = json.Marshal(param); err != nil {
 					return
 				}
 				bodyBuffer := bytes.NewBuffer(reqByte)
