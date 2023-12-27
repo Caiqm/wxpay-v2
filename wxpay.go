@@ -354,7 +354,7 @@ func (c *Client) decode(data []byte, method, returnType string, needVerifySign b
 	if c.onReceivedData != nil {
 		c.onReceivedData(method, data)
 	}
-	if strings.ToLower(returnType) == "json" || returnType == "" {
+	if strings.ToLower(returnType) == "json" || returnType == "jsonStr" || returnType == "" {
 		var raw = make(map[string]json.RawMessage)
 		if err = json.Unmarshal(data, &raw); err != nil {
 			return
