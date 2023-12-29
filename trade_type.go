@@ -62,6 +62,15 @@ type TradeAppletRsp struct {
 	CodeUrl string `xml:"code_url,omitempty" json:"code_url"` // trade_type=NATIVE时有返回，此url用于生成支付二维码，然后提供给用户进行扫码支付。注意：code_url的值并非固定，使用时按照URL格式转成二维码即可。时效性为2小时
 }
 
+type TradeAppletPayRsp struct {
+	AppID     string `json:"appId"`
+	Timestamp string `json:"timeStamp"`
+	NonceStr  string `json:"nonceStr"`
+	Package   string `json:"package"`
+	SignType  string `json:"signType"`
+	PaySign   string `json:"paySign"`
+}
+
 /* APP支付 */
 
 // TradeApp APP统一下单接口 https://pay.weixin.qq.com/wiki/doc/api/app/app.php?chapter=9_1

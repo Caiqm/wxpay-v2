@@ -192,6 +192,44 @@ func (c *Client) sign(parameters url.Values) string {
 	return strings.ToUpper(sign)
 }
 
+// 生成小程序签名
+func (c *Client) createAppletPaySign(timestamp, prepayId, nonceStr string) string {
+	wxPayInfo := make(map[string]string, 5)
+	wxPayInfo["appId"] = c.appId
+	wxPayInfo["timeStamp"] = timestamp
+	wxPayInfo["nonceStr"] = nonceStr
+	wxPayInfo["package"] = fmt.Sprintf("prepay_id=%s", prepayId)
+	wxPayInfo["signType"] = "MD5"
+	signStr := c.formatQueryParaMap(wxPayInfo)
+	signStr = fmt.Sprintf("%s&key=%s", signStr, c.mchSecret)
+	h := md5.New()
+	h.Write([]byte(signStr))
+	sign := hex.EncodeToString(h.Sum(nil))
+	return strings.ToUpper(sign)
+}
+
+// 格式化参数，签名过程需要使用
+func (c *Client) formatQueryParaMap(parameters map[string]string) string {
+	// 将key值提取出来
+	var strs []string
+	for k := range parameters {
+		strs = append(strs, k)
+	}
+	// 排序
+	sort.Strings(strs)
+	// 赋值新map
+	var signStr string
+	var dot string
+	for _, k := range strs {
+		if parameters[k] == "" {
+			continue
+		}
+		signStr += dot + k + "=" + parameters[k]
+		dot = "&"
+	}
+	return signStr
+}
+
 // 格式化参数，签名过程需要使用
 func (c *Client) formatBizQueryParaMap(parameters url.Values) string {
 	// 将key值提取出来

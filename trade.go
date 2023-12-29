@@ -1,12 +1,26 @@
 package wxpay
 
+import (
+	"fmt"
+	"time"
+)
+
 // TradeApplet 小程序统一下单接口 https://pay.weixin.qq.com/wiki/doc/api/wxa/wxa_api.php?chapter=9_1
 // POST https://api.mch.weixin.qq.com/pay/unifiedorder
-func (c *Client) TradeApplet(param TradeApplet) (result *TradeAppletRsp, err error) {
+func (c *Client) TradeApplet(param TradeApplet) (result TradeAppletPayRsp, err error) {
 	if param.TradeType == "" {
 		param.TradeType = "JSAPI"
 	}
-	err = c.doRequest("POST", param, &result)
+	tradeAppletRst := new(TradeAppletRsp)
+	if err = c.doRequest("POST", param, &tradeAppletRst); err != nil {
+		return
+	}
+	result.AppID = c.appId
+	result.Timestamp = fmt.Sprintf("%d", time.Now().Unix())
+	result.Package = fmt.Sprintf("prepay_id=%s", tradeAppletRst.PrepayId)
+	result.NonceStr = c.createNonceStr()
+	result.SignType = "MD5"
+	result.PaySign = c.createAppletPaySign(result.Timestamp, tradeAppletRst.PrepayId, result.NonceStr)
 	return
 }
 
