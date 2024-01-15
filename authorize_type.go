@@ -71,6 +71,10 @@ func (pn GetPhoneNumber) NeedVerify() bool {
 	return false
 }
 
+func (pn GetPhoneNumber) ReturnType() string {
+	return "jsonStr"
+}
+
 // GetPhoneNumberRsp 获取手机号响应参数
 type GetPhoneNumberRsp struct {
 	AppletError
