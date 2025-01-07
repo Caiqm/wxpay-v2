@@ -14,7 +14,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -322,7 +321,6 @@ func (m *payXml) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 
 // 请求主方法
 func (c *Client) doRequest(method string, param Param, result interface{}) (err error) {
-	returnTypeArr := []string{"jsonStr", "byte"}
 	// 创建一个请求
 	req, _ := http.NewRequest(method, c.host, nil)
 	// 判断参数是否为空
@@ -336,7 +334,7 @@ func (c *Client) doRequest(method string, param Param, result interface{}) (err 
 			// 根据类型转换
 			if strings.ToLower(param.ReturnType()) == "json" {
 				req.PostForm = values
-			} else if slices.Contains(returnTypeArr, param.ReturnType()) {
+			} else if param.ReturnType() == "jsonStr" || param.ReturnType() == "byte" {
 				// 结构体转map
 				var reqByte []byte
 				if reqByte, err = json.Marshal(param); err != nil {
@@ -369,7 +367,7 @@ func (c *Client) doRequest(method string, param Param, result interface{}) (err 
 		}
 	}
 	// 添加header头
-	if slices.Contains(returnTypeArr, param.ReturnType()) {
+	if param.ReturnType() == "jsonStr" || param.ReturnType() == "byte" {
 		req.Header.Set("Content-Type", kContentTypeJson)
 	} else {
 		req.Header.Set("Content-Type", kContentType)
