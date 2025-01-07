@@ -17,7 +17,7 @@ func (g Qrcode) NeedVerify() bool {
 }
 
 func (g Qrcode) ReturnType() string {
-	return "jsonStr"
+	return "byte"
 }
 
 // GetWxACodeUnLimit 获取不限制的小程序码 https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/qrcode-link/qr-code/getUnlimitedQRCode.html

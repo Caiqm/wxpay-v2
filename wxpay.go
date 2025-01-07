@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -321,6 +322,7 @@ func (m *payXml) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 
 // 请求主方法
 func (c *Client) doRequest(method string, param Param, result interface{}) (err error) {
+	returnTypeArr := []string{"jsonStr", "byte"}
 	// 创建一个请求
 	req, _ := http.NewRequest(method, c.host, nil)
 	// 判断参数是否为空
@@ -334,7 +336,7 @@ func (c *Client) doRequest(method string, param Param, result interface{}) (err 
 			// 根据类型转换
 			if strings.ToLower(param.ReturnType()) == "json" {
 				req.PostForm = values
-			} else if param.ReturnType() == "jsonStr" {
+			} else if slices.Contains(returnTypeArr, param.ReturnType()) {
 				// 结构体转map
 				var reqByte []byte
 				if reqByte, err = json.Marshal(param); err != nil {
@@ -367,7 +369,7 @@ func (c *Client) doRequest(method string, param Param, result interface{}) (err 
 		}
 	}
 	// 添加header头
-	if param.ReturnType() == "jsonStr" {
+	if slices.Contains(returnTypeArr, param.ReturnType()) {
 		req.Header.Set("Content-Type", kContentTypeJson)
 	} else {
 		req.Header.Set("Content-Type", kContentType)
@@ -392,19 +394,19 @@ func (c *Client) decode(data []byte, method, returnType string, needVerifySign b
 	if c.onReceivedData != nil {
 		c.onReceivedData(method, data)
 	}
-	if strings.ToLower(returnType) == "json" || returnType == "jsonStr" || returnType == "" {
+	if strings.ToLower(returnType) == "json" || returnType == "jsonStr" || returnType == "byte" || returnType == "" {
+		if returnType == "byte" {
+			err = nil
+			rsp := result.(*QrcodeRsp)
+			rsp.Buffer = data
+			return
+		}
 		var raw = make(map[string]json.RawMessage)
 		if err = json.Unmarshal(data, &raw); err != nil {
-			if returnType == "jsonStr" {
-				err = nil
-				rsp := result.(*QrcodeRsp)
-				rsp.Buffer = data
-				return
-			}
 			return fmt.Errorf("解析返回结构失败，%v", err)
 		}
 		// 判断是否成功
-		var errNBytes = raw[kFieldErrCode]
+		errNBytes := raw[kFieldErrCode]
 		if len(errNBytes) > 0 && string(errNBytes) != "0" {
 			var aErr *AppletError
 			if err = json.Unmarshal(data, &aErr); err != nil {
